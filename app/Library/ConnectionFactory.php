@@ -9,6 +9,10 @@
 namespace App\Library;
 
 use Illuminate\Database\Connectors\ConnectionFactory as BaseConnectionFactory;
+use Illuminate\Database\Connectors\PostgresConnector;
+use Illuminate\Database\Connectors\SQLiteConnector;
+use Illuminate\Database\Connectors\SqlServerConnector;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Illuminate\Database\Connection;
 use Illuminate\Database\MySqlConnection;
@@ -37,5 +41,30 @@ class ConnectionFactory extends BaseConnectionFactory
         }
 
         throw new InvalidArgumentException("Unsupported driver [$driver]");
+    }
+
+    public function createConnector(array $config)
+    {
+        if (! isset($config['driver'])) {
+            throw new InvalidArgumentException('A driver must be specified.');
+        }
+
+        if ($this->container->bound($key = "db.connector.{$config['driver']}")) {
+            return $this->container->make($key);
+        }
+
+
+        switch ($config['driver']) {
+            case 'mysql':
+                return new MySqlConnector;
+            case 'pgsql':
+                return new PostgresConnector;
+            case 'sqlite':
+                return new SQLiteConnector;
+            case 'sqlsrv':
+                return new SqlServerConnector;
+        }
+
+        throw new InvalidArgumentException("Unsupported driver [{$config['driver']}]");
     }
 }

@@ -9,6 +9,7 @@
 namespace App\Library;
 
 use Illuminate\Database\DatabaseServiceProvider as BaseDatabaseServiceProvider;
+use Illuminate\Support\Facades\Log;
 
 class DatabaseServiceProvider extends BaseDatabaseServiceProvider
 {

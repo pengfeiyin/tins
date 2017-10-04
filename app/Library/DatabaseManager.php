@@ -9,6 +9,7 @@
 namespace App\Library;
 
 use Illuminate\Database\DatabaseManager as BaseDatabaseManager;
+use Illuminate\Support\Facades\Log;
 
 class DatabaseManager extends BaseDatabaseManager
 {

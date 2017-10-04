@@ -11,5 +11,5 @@ namespace App\Model;
 
 class TestModel extends BaseModel
 {
-    
+    protected $table = 'template_store';
 }

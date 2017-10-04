@@ -5,6 +5,6 @@
  * Date: 2017/9/30
  * Time: 上午9:33
  */
-$router->put('/swer/test2/{name}', [
+$router->get('/swer/test2/{id}', [
     'uses' => 'TestController@show'
 ]);
