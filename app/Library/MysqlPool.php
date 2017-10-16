@@ -41,9 +41,50 @@ class MysqlPool
         foreach ($this->configs as $key => $config) {
             $dsn = "mysql:host=".$config['host'].';dbname='.$config['database'];
             for ($i = 0; $i < $config['size']; $i++) {
-                $pdo = new \PDO($dsn, $config['username'], $config['password']);
-                $this->pools[$key]->enqueue($pdo);
+                try {
+                    $pdo = new \PDO($dsn, $config['username'], $config['password']);
+                    $this->pools[$key]->enqueue($pdo);
+                } catch (\PDOException $e) {
+                    print_r('initialPool exception : ' . $e->getMessage() . PHP_EOL);
+                    throw $e;
+                }
             }
+        }
+
+        $this->listenLinks();
+    }
+
+    public function listenLinks()
+    {
+        swoole_timer_tick(6000, function() {
+            foreach ($this->pools as $key=>$pool) {
+                $config = $this->configs[$key];
+                $poolCount = $pool->count();
+                $count = $poolCount > $config['size'] ? $poolCount : $config['size'];
+                for ($i = 0; $i < $count; $i++) {
+                    $pdo = $this->pools[$key]->dequeue();
+                    try {
+                        $pdo->getAttribute(\PDO::ATTR_SERVER_INFO);
+                        $this->pools[$key]->enqueue($pdo);
+                    } catch (\PDOException $e) {
+                        $this->addConnection($key);
+                    }
+                }
+            }
+        });
+    }
+
+    protected function addConnection($key)
+    {
+        var_dump('addConnection'.PHP_EOL);
+        $config = $this->configs[$key];
+        $dsn = "mysql:host=".$config['host'].';dbname='.$config['database'];
+        try {
+            $pdo = new \PDO($dsn, $config['username'], $config['password']);
+            $this->pools[$key]->enqueue($pdo);
+        } catch (\PDOException $e) {
+            print_r('addConnection exception : ' . $e->getMessage() . PHP_EOL);
+            throw $e;
         }
     }
 

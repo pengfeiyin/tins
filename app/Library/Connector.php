@@ -18,4 +18,9 @@ class Connector extends BaseConnector
         $pdo = MysqlPool::getInstance()->getConnection($key);
         return $pdo;
     }
+
+    protected function tryAgainIfCausedByLostConnection(\Exception $e, $dsn, $username, $password, $options)
+    {
+        throw $e;
+    }
 }
